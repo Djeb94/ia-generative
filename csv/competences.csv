@@ -1,0 +1,14 @@
+CompetencyID,CompetencyName,BlockID,BlockName
+C01,Python programming,B01,Data Analysis
+C02,Data cleaning,B01,Data Analysis
+C03,Data visualization,B01,Data Analysis
+C04,Statistics,B01,Data Analysis
+C05,Machine learning basics,B02,Machine Learning
+C06,Regression models,B02,Machine Learning
+C07,Classification models,B02,Machine Learning
+C08,Neural networks,B02,Machine Learning
+C09,Model evaluation,B02,Machine Learning
+C10,Tokenization,B03,NLP
+C11,Word embeddings,B03,NLP
+C12,Transformers,B03,NLP
+C13,Semantic analysis,B03,NLP
