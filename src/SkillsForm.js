@@ -348,7 +348,7 @@ function SkillsForm() {
               <ul>
                 {analysisResult.recommended_jobs && analysisResult.recommended_jobs.length ? (
                   analysisResult.recommended_jobs.map((job, i) => (
-                    <li key={i}>{job.job} — match: {(job.match_rate*100).toFixed(0)}%</li>
+                    <li key={i}>{job.job} — match: {job.match.toFixed(0)}%</li>
                   ))
                 ) : <li>Aucune recommandation</li>}
               </ul>
