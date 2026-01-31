@@ -43,15 +43,6 @@ function SkillsForm() {
     });
   };
 
-  const handleCheckboxChange = (skill) => {
-    setFormData({
-      ...formData,
-      skills: formData.skills.includes(skill)
-        ? formData.skills.filter(s => s !== skill)
-        : [...formData.skills, skill]
-    });
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     // Préparer payload: texte libre + autres réponses
@@ -91,26 +82,6 @@ function SkillsForm() {
 
   const likertLabels = ['Pas du tout', 'Peu', 'Modéré', 'Bon', 'Excellent'];
   
-  const skillsOptions = [
-    'Nettoyage de données (Python)',
-    'Analyse descriptive (SQL)',
-    'Visualisation (Tableau, Power BI)',
-    'Modèles de régression',
-    'Deep Learning',
-    'NLP (Traitement du langage)',
-    'Computer Vision',
-    'Big Data (Spark)',
-    'Cloud (AWS, GCP, Azure)'
-  ];
-
-  const toolOptions = [
-    'Python',
-    'R',
-    'SQL',
-    'Power BI',
-    'Tableau',
-    'Excel'
-  ];
 
   const experienceOptions = [
     'Moins de 1 an',
@@ -216,44 +187,21 @@ function SkillsForm() {
           </div>
         </section>
 
-        {/* Cases */}
+                {/* Champ libre outil principal */}
         <section className="form-section">
-          <h2 className="section-title">✅ Compétences Spécialisées (Cases à cocher)</h2>
-          <p className="section-description">Sélectionnez toutes les compétences que vous maîtrisez</p>
-          
-          <div className="checkbox-grid">
-            {skillsOptions.map((skill) => (
-              <label key={skill} className="checkbox-item">
-                <input
-                  type="checkbox"
-                  checked={formData.skills.includes(skill)}
-                  onChange={() => handleCheckboxChange(skill)}
-                />
-                <span className="checkbox-label">{skill}</span>
-              </label>
-            ))}
-          </div>
-        </section>
+          <h2 className="section-title">🔧 Outils principaux utilisés et dans quel but</h2>
+          <p className="section-description">
+            Décrivez librement les outils que vous utilisez pour l’analyse de données
+          </p>
 
-        {/* Choix */}
-        <section className="form-section">
-          <h2 className="section-title">🔧 Outil Principal (Choix multiples)</h2>
-          <p className="section-description">Quel est votre outil principal pour l'analyse de données ?</p>
-          
-          <div className="radio-grid">
-            {toolOptions.map((tool) => (
-              <label key={tool} className="radio-item">
-                <input
-                  type="radio"
-                  name="primaryTool"
-                  value={tool}
-                  checked={formData.primaryTool === tool}
-                  onChange={handleTextChange}
-                />
-                <span className="radio-label">{tool}</span>
-              </label>
-            ))}
-          </div>
+          <textarea
+            name="primaryTool"
+            value={formData.primaryTool}
+            onChange={handleTextChange}
+            placeholder="Ex : Python (Pandas, NumPy), Power BI, Excel, SQL, Tableau, TensorFlow..."
+            className="textarea"
+            rows={4}
+          />
         </section>
 
         {/* Expérience */}
