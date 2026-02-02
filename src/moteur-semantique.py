@@ -42,14 +42,13 @@ def _load_csvs():
 COMP_DF, METIERS_DF = _load_csvs()
 
 MODEL_NAME = os.getenv("SBERT_MODEL", "all-MiniLM-L6-v2")
-print("Loading SBERT model:", MODEL_NAME)
 MODEL = SentenceTransformer(MODEL_NAME)
 
 COMPETENCE_NAMES: List[str] = COMP_DF["CompetencyName"].astype(str).tolist() if not COMP_DF.empty else []
 COMP_EMBS = MODEL.encode(COMPETENCE_NAMES, convert_to_tensor=True) if COMPETENCE_NAMES else None
 
 
-# 🔥 JOB EMBEDDINGS (FIXED)
+# ================= JOB EMBEDDINGS =================
 JOB_EMBS = []
 JOB_ROWS = []
 
@@ -67,8 +66,6 @@ if COMP_EMBS is not None and not METIERS_DF.empty:
 
         if emb_list:
             mean_emb = torch.mean(torch.stack(emb_list), dim=0)
-
-            # ❌ ignore invalid embeddings
             if torch.isnan(mean_emb).any() or torch.isinf(mean_emb).any():
                 continue
 
@@ -102,13 +99,13 @@ def analyse_endpoint(data: UserInput):
             return {"matched_competences": [], "block_scores": {}, "recommended_jobs": []}
 
         user_emb = MODEL.encode(combined, convert_to_tensor=True)
-
         sims = util.cos_sim(user_emb, COMP_EMBS)[0].cpu().numpy()
 
+        # ===== TOP COMPETENCES =====
         top_k = min(5, len(sims))
         top_idx = list(np.argsort(sims)[-top_k:][::-1])
-
         matched = []
+
         for idx in top_idx:
             row = COMP_DF.iloc[int(idx)]
             matched.append({
@@ -118,23 +115,56 @@ def analyse_endpoint(data: UserInput):
                 "score": float(sims[int(idx)])
             })
 
+        # ===== BLOCK SCORES =====
         block_map: Dict[str, List[float]] = {}
         for i, sc in enumerate(sims):
             blk = str(COMP_DF.iloc[int(i)].get("BlockName", ""))
             block_map.setdefault(blk, []).append(float(sc))
-        block_scores = {b: float(np.mean(v)) for b, v in block_map.items()}
 
-        # 🔥 JOB SIMILARITY (SAFE)
+        block_scores = {}
+
+        for b, v in block_map.items():
+            v_sorted = sorted(v, reverse=True)
+
+            # moyenne des 3 meilleures compétences seulement
+            top_n = v_sorted[:3]
+            block_scores[b] = float(np.mean(top_n))
+
+
+        # ===== COVERAGE SCORE =====
+        BLOCK_WEIGHTS = {
+            "Data Analysis": 1,
+            "Machine Learning": 1,
+            "NLP": 1
+        }
+
+        weighted_sum = 0
+        total_weight = 0
+
+        for block, score in block_scores.items():
+            w = BLOCK_WEIGHTS.get(block, 1)
+            weighted_sum += w * score
+            total_weight += w
+
+        coverage_score = weighted_sum / total_weight if total_weight else 0
+
+        # ===== PROFILE LEVEL =====
+        if coverage_score >= 0.7:
+            profile_level = "Data Scientist"
+        elif coverage_score >= 0.5:
+            profile_level = "ML Engineer"
+        else:
+            profile_level = "Entry-level Analyst"
+
+        # ===== JOB MATCHING =====
         recommended = []
         if JOB_EMBS:
             job_sims = []
 
             for jemb, jinfo in zip(JOB_EMBS, JOB_ROWS):
                 score = util.cos_sim(user_emb, jemb)[0][0].item()
-
                 if np.isnan(score) or np.isinf(score):
                     score = 0.0
-
                 job_sims.append((score, jinfo))
 
             job_sims = sorted(job_sims, key=lambda x: x[0], reverse=True)[:3]
@@ -143,12 +173,14 @@ def analyse_endpoint(data: UserInput):
                 recommended.append({
                     "job_id": str(info.get("job_id")),
                     "job": str(info.get("title")),
-                    "match": round(float(s) * 100, 2)  # 🔥 percent
+                    "match": round(float(s) * 100, 2)
                 })
 
         return {
             "matched_competences": matched,
             "block_scores": block_scores,
+            "coverage_score": round(float(coverage_score), 3),
+            "profile_recommendation": profile_level,
             "recommended_jobs": recommended
         }
 

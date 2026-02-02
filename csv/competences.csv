@@ -1,7 +1,7 @@
 CompetencyID,CompetencyName,BlockID,BlockName
 C01,Python programming,B04,Data Scientist
-C02,Data cleaning,B01,Data Analysis
-C03,Data visualization,B01,Data Analysis
+C02,cleaning,B01,Data Analysis
+C03,visualization,B01,Data Analysis
 C04,Statistics,B01,Data Analysis
 C05,Machine learning basics,B02,Machine Learning
 C06,Regression models,B02,Machine Learning
