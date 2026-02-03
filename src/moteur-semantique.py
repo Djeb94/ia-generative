@@ -48,7 +48,6 @@ COMPETENCE_NAMES: List[str] = COMP_DF["CompetencyName"].astype(str).tolist() if 
 COMP_EMBS = MODEL.encode(COMPETENCE_NAMES, convert_to_tensor=True) if COMPETENCE_NAMES else None
 
 
-# ================= JOB EMBEDDINGS =================
 JOB_EMBS = []
 JOB_ROWS = []
 
@@ -101,7 +100,6 @@ def analyse_endpoint(data: UserInput):
         user_emb = MODEL.encode(combined, convert_to_tensor=True)
         sims = util.cos_sim(user_emb, COMP_EMBS)[0].cpu().numpy()
 
-        # ===== TOP COMPETENCES =====
         top_k = min(5, len(sims))
         top_idx = list(np.argsort(sims)[-top_k:][::-1])
         matched = []
@@ -115,7 +113,6 @@ def analyse_endpoint(data: UserInput):
                 "score": float(sims[int(idx)])
             })
 
-        # ===== BLOCK SCORES =====
         block_map: Dict[str, List[float]] = {}
         for i, sc in enumerate(sims):
             blk = str(COMP_DF.iloc[int(i)].get("BlockName", ""))
@@ -126,12 +123,10 @@ def analyse_endpoint(data: UserInput):
         for b, v in block_map.items():
             v_sorted = sorted(v, reverse=True)
 
-            # moyenne des 3 meilleures compétences seulement
             top_n = v_sorted[:3]
             block_scores[b] = float(np.mean(top_n))
 
 
-        # ===== COVERAGE SCORE =====
         BLOCK_WEIGHTS = {
             "Data Analysis": 1,
             "Machine Learning": 1,
@@ -148,7 +143,7 @@ def analyse_endpoint(data: UserInput):
 
         coverage_score = weighted_sum / total_weight if total_weight else 0
 
-        # ===== PROFILE LEVEL =====
+
         if coverage_score >= 0.7:
             profile_level = "Data Scientist"
         elif coverage_score >= 0.5:
@@ -156,7 +151,6 @@ def analyse_endpoint(data: UserInput):
         else:
             profile_level = "Entry-level Analyst"
 
-        # ===== JOB MATCHING =====
         recommended = []
         if JOB_EMBS:
             job_sims = []
