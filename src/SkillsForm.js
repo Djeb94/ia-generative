@@ -300,6 +300,20 @@ function SkillsForm() {
                   ))
                 ) : <li>Aucune recommandation</li>}
               </ul>
+              {analysisResult.career_advice && (
+                <div style={{
+                  marginTop: 20,
+                  padding: 15,
+                  background: "#f4f7ff",
+                  borderLeft: "4px solid #6c63ff",
+                  borderRadius: 8
+                }}>
+                  <strong>🧠 Analyse et conseils IA :</strong>
+                  <p style={{ marginTop: 8, lineHeight: 1.6 }}>
+                    {analysisResult.career_advice}
+                  </p>
+                </div>
+              )}
             </div>
           </section>
         )}
